@@ -1,10 +1,38 @@
 "use client";
 
-import { useCourseStore } from "@/app/store/courseStore";
+import { useEffect, useState } from "react";
+import { courseApi } from "@/app/lib/api";
+import { Course } from "@/app/types/models";
 import Link from "next/link";
 
 export const CourseList = () => {
-  const courses = useCourseStore((state) => state.courses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const coursesData = await courseApi.getAllCourses();
+        setCourses(coursesData);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Błąd podczas ładowania kursów");
+        }
+      }
+    };
+
+    loadCourses();
+  }, []);
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -35,7 +63,7 @@ export const CourseList = () => {
               </div>
               <Link
                 href={`/course/${course.id}`}
-                className="inline-block bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+                className="inline-block bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Zobacz szczegóły
               </Link>

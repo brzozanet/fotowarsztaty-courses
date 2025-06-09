@@ -1,7 +1,10 @@
 "use client";
 
-import { useUserStore } from "@/app/store/userStore";
+import { useState, useEffect } from "react";
+import { userApi } from "@/app/lib/api";
+import { User } from "./types/models";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import "./globals.css";
 
 export default function RootLayout({
@@ -9,8 +12,26 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const currentUser = useUserStore((state) => state.currentUser);
-  const logout = useUserStore((state) => state.logout);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("currentUser");
+    if (userStr) {
+      setCurrentUser(JSON.parse(userStr));
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await userApi.logout();
+      localStorage.removeItem("currentUser");
+      setCurrentUser(null);
+      router.push("/login");
+    } catch (error) {
+      console.error("Błąd podczas wylogowywania:", error);
+    }
+  };
 
   return (
     <html lang="pl">
@@ -34,7 +55,7 @@ export default function RootLayout({
                       Panel Admin
                     </Link>
                     <button
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="text-gray-700 hover:text-gray-900"
                     >
                       Wyloguj

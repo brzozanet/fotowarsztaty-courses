@@ -1,21 +1,30 @@
 "use client";
 
 import React, { useState } from "react";
-import { useUserStore } from "@/app/store/userStore";
+import { userApi } from "@/app/lib/api";
+import { useRouter } from "next/navigation";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const login = useUserStore((state) => state.login);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const success = login(email, password);
-    if (!success) {
-      setError("Nieprawidłowy email lub hasło");
+    try {
+      const { user } = await userApi.login(email, password);
+      // Zapisz dane użytkownika w localStorage
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      router.push("/");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Wystąpił błąd podczas logowania");
+      }
     }
   };
 
@@ -58,7 +67,7 @@ export const LoginForm = () => {
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Zaloguj się
         </button>

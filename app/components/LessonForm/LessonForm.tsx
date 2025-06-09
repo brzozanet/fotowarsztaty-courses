@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCourseStore } from "@/app/store/courseStore";
-import { Lesson } from "@/app/types/models";
+import { courseApi } from "@/app/lib/api";
+import { Category, Course } from "@/app/types/models";
 
 interface LessonFormProps {
   courseId: string;
@@ -19,54 +19,81 @@ export const LessonForm = ({
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [categoryId, setCategoryId] = useState("");
-
-  const courses = useCourseStore((state) => state.courses);
-  const categories = useCourseStore((state) => state.categories);
-  const addLesson = useCourseStore((state) => state.addLesson);
-  const updateLesson = useCourseStore((state) => state.updateLesson);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (lessonId) {
-      const course = courses.find((c) => c.id === courseId);
-      const lesson = course?.lessons.find((l) => l.id === lessonId);
-      if (lesson) {
-        setTitle(lesson.title);
-        setDescription(lesson.description);
-        setVideoUrl(lesson.videoUrl);
-        setCategoryId(lesson.categoryId);
+    const loadData = async () => {
+      try {
+        // Pobierz kategorie
+        const categoriesData = await courseApi.getAllCategories();
+        setCategories(categoriesData);
+
+        // Jeśli edytujemy lekcję, pobierz jej dane
+        if (lessonId) {
+          const courses = await courseApi.getAllCourses();
+          const course = courses.find((c) => c.id === courseId);
+          const lesson = course?.lessons.find((l) => l.id === lessonId);
+          if (lesson) {
+            setTitle(lesson.title);
+            setDescription(lesson.description);
+            setVideoUrl(lesson.videoUrl);
+            setCategoryId(lesson.categoryId);
+          }
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Błąd podczas ładowania danych");
+        }
       }
-    }
-  }, [lessonId, courseId, courses]);
+    };
 
-  const handleSubmit = (e: React.FormEvent) => {
+    loadData();
+  }, [courseId, lessonId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
-    if (lessonId) {
-      const course = courses.find((c) => c.id === courseId);
-      const lesson = course?.lessons.find((l) => l.id === lessonId);
-      if (lesson) {
-        updateLesson({
-          ...lesson,
+    try {
+      if (lessonId) {
+        await courseApi.updateLesson({
+          id: lessonId,
+          courseId,
           title,
           description,
           videoUrl,
           categoryId,
         });
+      } else {
+        await courseApi.createLesson(
+          courseId,
+          title,
+          description,
+          videoUrl,
+          categoryId
+        );
       }
-    } else {
-      addLesson(courseId, title, description, videoUrl, categoryId);
-    }
 
-    setTitle("");
-    setDescription("");
-    setVideoUrl("");
-    setCategoryId("");
-    onSubmit?.();
+      setTitle("");
+      setDescription("");
+      setVideoUrl("");
+      setCategoryId("");
+      onSubmit?.();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Wystąpił błąd podczas zapisywania lekcji");
+      }
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6">
         {lessonId ? "Edytuj lekcję" : "Dodaj nową lekcję"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -140,9 +167,10 @@ export const LessonForm = ({
             ))}
           </select>
         </div>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           {lessonId ? "Zapisz zmiany" : "Dodaj lekcję"}
         </button>

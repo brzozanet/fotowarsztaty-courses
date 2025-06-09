@@ -1,25 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CourseForm } from "@/app/components/CourseForm/CourseForm";
 import { LessonForm } from "@/app/components/LessonForm/LessonForm";
-import { useCourseStore } from "@/app/store/courseStore";
+import { courseApi } from "@/app/lib/api";
+import { Course } from "@/app/types/models";
 
 export default function AdminPage() {
   const [selectedCourseId, setSelectedCourseId] = useState("");
-  const courses = useCourseStore((state) => state.courses);
-  const deleteCourse = useCourseStore((state) => state.deleteCourse);
-  const deleteLesson = useCourseStore((state) => state.deleteLesson);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [error, setError] = useState("");
+
+  const loadCourses = async () => {
+    try {
+      const coursesData = await courseApi.getAllCourses();
+      setCourses(coursesData);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Błąd podczas ładowania kursów");
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const handleDeleteCourse = async (id: string) => {
+    try {
+      await courseApi.deleteCourse(id);
+      await loadCourses();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Błąd podczas usuwania kursu");
+      }
+    }
+  };
+
+  const handleDeleteLesson = async (courseId: string, lessonId: string) => {
+    try {
+      await courseApi.deleteLesson(courseId, lessonId);
+      await loadCourses();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Błąd podczas usuwania lekcji");
+      }
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Panel administracyjny</h1>
 
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-2xl font-bold mb-6">Zarządzanie kursami</h2>
-            <CourseForm />
+            <h2 className="text-2xl font-bold mb-4">Zarządzanie kursami</h2>
+            <CourseForm onSubmit={loadCourses} />
 
             <div className="mt-8">
               <h3 className="text-xl font-bold mb-4">Lista kursów</h3>
@@ -30,55 +75,66 @@ export default function AdminPage() {
                 >
                   <h4 className="font-bold">{course.title}</h4>
                   <p className="text-gray-600 mb-2">{course.description}</p>
-                  <div className="flex gap-2">
+                  <div className="flex space-x-2">
                     <button
                       onClick={() => setSelectedCourseId(course.id)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                      className="text-blue-600 hover:text-blue-800"
                     >
-                      Dodaj lekcję
+                      Edytuj
                     </button>
                     <button
-                      onClick={() => deleteCourse(course.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      onClick={() => handleDeleteCourse(course.id)}
+                      className="text-red-600 hover:text-red-800"
                     >
-                      Usuń kurs
+                      Usuń
                     </button>
                   </div>
-
-                  <div className="mt-4">
-                    <h5 className="font-bold mb-2">Lekcje:</h5>
-                    <ul className="space-y-2">
-                      {course.lessons.map((lesson) => (
-                        <li
-                          key={lesson.id}
-                          className="flex justify-between items-center"
-                        >
-                          <span>{lesson.title}</span>
-                          <button
-                            onClick={() => deleteLesson(course.id, lesson.id)}
-                            className="text-red-500 hover:text-red-600"
+                  {course.lessons.length > 0 && (
+                    <div className="mt-2">
+                      <h5 className="font-semibold mb-1">Lekcje:</h5>
+                      <ul className="space-y-1">
+                        {course.lessons.map((lesson) => (
+                          <li
+                            key={lesson.id}
+                            className="flex justify-between items-center"
                           >
-                            Usuń
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                            <span>{lesson.title}</span>
+                            <button
+                              onClick={() =>
+                                handleDeleteLesson(course.id, lesson.id)
+                              }
+                              className="text-red-600 hover:text-red-800 text-sm"
+                            >
+                              Usuń
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold mb-6">Dodaj lekcję</h2>
+            <h2 className="text-2xl font-bold mb-4">Zarządzanie lekcjami</h2>
             {selectedCourseId ? (
-              <LessonForm
-                courseId={selectedCourseId}
-                onSubmit={() => setSelectedCourseId("")}
-              />
+              <>
+                <LessonForm
+                  courseId={selectedCourseId}
+                  onSubmit={loadCourses}
+                />
+                <button
+                  onClick={() => setSelectedCourseId("")}
+                  className="mt-4 text-gray-600 hover:text-gray-800"
+                >
+                  Anuluj wybór kursu
+                </button>
+              </>
             ) : (
               <p className="text-gray-600">
-                Wybierz kurs, aby dodać do niego lekcję
+                Wybierz kurs z listy, aby dodać lub edytować lekcje
               </p>
             )}
           </div>
