@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { courseApi } from "@/app/lib/api";
+import { courseApi, categoryApi } from "@/app/lib/api";
 import { Category, Course } from "@/app/types/models";
 
 interface LessonFormProps {
@@ -26,7 +26,7 @@ export const LessonForm = ({
     const loadData = async () => {
       try {
         // Pobierz kategorie
-        const categoriesData = await courseApi.getAllCategories();
+        const categoriesData = await categoryApi.getAllCategories();
         setCategories(categoriesData);
 
         // Jeśli edytujemy lekcję, pobierz jej dane
