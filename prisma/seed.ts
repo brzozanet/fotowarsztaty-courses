@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { initialCategories, initialCourses } from '../app/utils/initialData';
+import { PrismaClient } from "@prisma/client";
+import { initialCategories, initialCourses } from "../app/utils/initialData";
 
 const prisma = new PrismaClient();
 
@@ -9,28 +9,31 @@ async function main() {
   await prisma.course.deleteMany();
   await prisma.category.deleteMany();
 
-  console.log('Usunięto istniejące dane');
+  console.log("Usunięto istniejące dane");
+
+  // Tworzymy mapę kategorii: tytuł -> id
+  const categoryMap = new Map<string, string>();
 
   // Dodajemy kategorie
   const categories = await Promise.all(
-    initialCategories.map((category) =>
-      prisma.category.create({
+    initialCategories.map(async (category) => {
+      const createdCategory = await prisma.category.create({
         data: {
-          id: category.id,
           title: category.title,
         },
-      })
-    )
+      });
+      categoryMap.set(category.id, createdCategory.id);
+      return createdCategory;
+    })
   );
 
-  console.log('Dodano kategorie:', categories);
+  console.log("Dodano kategorie:", categories);
 
   // Dodajemy kursy wraz z lekcjami
   const courses = await Promise.all(
     initialCourses.map(async (course) => {
       const createdCourse = await prisma.course.create({
         data: {
-          id: course.id,
           title: course.title,
           description: course.description,
         },
@@ -41,12 +44,12 @@ async function main() {
         course.lessons.map((lesson) =>
           prisma.lesson.create({
             data: {
-              id: lesson.id,
               title: lesson.title,
               description: lesson.description,
               videoUrl: lesson.videoUrl,
               courseId: createdCourse.id,
-              categoryId: lesson.categoryId,
+              categoryId:
+                categoryMap.get(lesson.categoryId) || categories[0].id,
             },
           })
         )
@@ -61,7 +64,18 @@ async function main() {
     })
   );
 
-  console.log('Dodano kursy:', courses);
+  console.log("Dodano kursy:", courses);
+
+  // Dodajemy testowego użytkownika
+  const testUser = await prisma.user.create({
+    data: {
+      email: "admin@fotowarsztaty.pl",
+      password: "$2a$10$K7L1OJ45/4Y2nIvL1bXzuu3hvqJcgGl8YMXCM9SJKu.YPPXz4m3m6", // hasło: admin123
+      name: "Administrator",
+    },
+  });
+
+  console.log("Dodano testowego użytkownika:", testUser);
 }
 
 main()
@@ -71,4 +85,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  }); 
+  });
