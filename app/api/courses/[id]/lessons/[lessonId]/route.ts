@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 
 interface Params {
   params: {
-    courseId: string;
+    id: string;
     lessonId: string;
   };
 }

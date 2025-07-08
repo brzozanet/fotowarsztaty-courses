@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 
 interface Params {
   params: {
-    courseId: string;
+    id: string;
   };
 }
 
@@ -11,7 +11,7 @@ interface Params {
 export async function POST(request: NextRequest, { params }: Params) {
   try {
     const { title, description, videoUrl, categoryId } = await request.json();
-    const { courseId } = params;
+    const { id: courseId } = params;
 
     // Sprawdź czy kurs istnieje
     const course = await prisma.course.findUnique({
