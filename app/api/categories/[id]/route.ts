@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // PUT - Aktualizuj kategorię
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const { title } = await request.json();
-    const { id } = params;
+    const { id } = await params;
 
     const category = await prisma.category.update({
       where: { id },
@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 // DELETE - Usuń kategorię
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Sprawdź czy kategoria ma przypisane lekcje
     const lessonsCount = await prisma.lesson.count({

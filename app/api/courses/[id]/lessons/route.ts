@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // POST - Dodaj lekcję do kursu
 export async function POST(request: NextRequest, { params }: Params) {
   try {
     const { title, description, videoUrl, categoryId } = await request.json();
-    const { id: courseId } = params;
+    const { id: courseId } = await params;
 
     // Sprawdź czy kurs istnieje
     const course = await prisma.course.findUnique({

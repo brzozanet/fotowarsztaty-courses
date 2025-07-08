@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // PUT - Aktualizuj kurs
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const { title, description } = await request.json();
-    const { id } = params;
+    const { id } = await params;
 
     const course = await prisma.course.update({
       where: { id },
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 // DELETE - Usuń kurs
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.course.delete({
       where: { id },

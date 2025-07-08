@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
     lessonId: string;
-  };
+  }>;
 }
 
 // PUT - Aktualizuj lekcję
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const { title, description, videoUrl, categoryId } = await request.json();
-    const { lessonId } = params;
+    const { lessonId } = await params;
 
     const lesson = await prisma.lesson.update({
       where: { id: lessonId },
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 // DELETE - Usuń lekcję
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { lessonId } = params;
+    const { lessonId } = await params;
 
     await prisma.lesson.delete({
       where: { id: lessonId },
