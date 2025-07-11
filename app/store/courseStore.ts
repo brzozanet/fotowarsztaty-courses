@@ -1,3 +1,4 @@
+// INFO: turn off by Claude
 // WYŁĄCZONY - Aplikacja używa teraz Prisma + API zamiast Zustand store
 // Wszystkie dane są pobierane z bazy danych przez API endpoints
 

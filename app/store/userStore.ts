@@ -1,3 +1,4 @@
+// INFO: turn off by Claude
 // WYŁĄCZONY - Aplikacja używa teraz Prisma + API zamiast Zustand store
 // Zarządzanie użytkownikami przez API endpoints: /api/users/register, /api/users/login
 
