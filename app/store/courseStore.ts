@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { nanoid } from "nanoid";
+// WYŁĄCZONY - Aplikacja używa teraz Prisma + API zamiast Zustand store
+// Wszystkie dane są pobierane z bazy danych przez API endpoints
+
 import { Course, Lesson, Category } from "../types/models";
-import { initialCategories, initialCourses } from "../utils/initialData";
 
 interface CourseStore {
   courses: Course[];
@@ -23,105 +23,35 @@ interface CourseStore {
   deleteCategory: (id: string) => void;
 }
 
-export const useCourseStore = create<CourseStore>((set) => ({
-  courses: initialCourses,
-  categories: initialCategories,
-
-  addCourse: (title: string, description: string) => {
-    set((state) => ({
-      courses: [
-        ...state.courses,
-        { id: nanoid(), title, description, lessons: [] },
-      ],
-    }));
+// Pusta implementacja - wszystkie dane teraz przez API
+export const useCourseStore = (): CourseStore => ({
+  courses: [],
+  categories: [],
+  addCourse: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  updateCourse: (updatedCourse: Course) => {
-    set((state) => ({
-      courses: state.courses.map((course) =>
-        course.id === updatedCourse.id ? updatedCourse : course
-      ),
-    }));
+  updateCourse: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  deleteCourse: (id: string) => {
-    set((state) => ({
-      courses: state.courses.filter((course) => course.id !== id),
-    }));
+  deleteCourse: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  addLesson: (
-    courseId: string,
-    title: string,
-    description: string,
-    videoUrl: string,
-    categoryId: string
-  ) => {
-    const newLesson: Lesson = {
-      id: nanoid(),
-      title,
-      description,
-      videoUrl,
-      categoryId,
-      courseId,
-    };
-
-    set((state) => ({
-      courses: state.courses.map((course) =>
-        course.id === courseId
-          ? { ...course, lessons: [...course.lessons, newLesson] }
-          : course
-      ),
-    }));
+  addLesson: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  updateLesson: (updatedLesson: Lesson) => {
-    set((state) => ({
-      courses: state.courses.map((course) =>
-        course.id === updatedLesson.courseId
-          ? {
-              ...course,
-              lessons: course.lessons.map((lesson) =>
-                lesson.id === updatedLesson.id ? updatedLesson : lesson
-              ),
-            }
-          : course
-      ),
-    }));
+  updateLesson: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  deleteLesson: (courseId: string, lessonId: string) => {
-    set((state) => ({
-      courses: state.courses.map((course) =>
-        course.id === courseId
-          ? {
-              ...course,
-              lessons: course.lessons.filter(
-                (lesson) => lesson.id !== lessonId
-              ),
-            }
-          : course
-      ),
-    }));
+  deleteLesson: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  addCategory: (title: string) => {
-    set((state) => ({
-      categories: [...state.categories, { id: nanoid(), title }],
-    }));
+  addCategory: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  updateCategory: (updatedCategory: Category) => {
-    set((state) => ({
-      categories: state.categories.map((category) =>
-        category.id === updatedCategory.id ? updatedCategory : category
-      ),
-    }));
+  updateCategory: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-
-  deleteCategory: (id: string) => {
-    set((state) => ({
-      categories: state.categories.filter((category) => category.id !== id),
-    }));
+  deleteCategory: () => {
+    console.warn("useCourseStore jest wyłączony - używaj API zamiast tego");
   },
-}));
+});

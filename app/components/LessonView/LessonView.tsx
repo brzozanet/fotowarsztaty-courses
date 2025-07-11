@@ -1,8 +1,8 @@
 "use client";
 
-import { useCourseStore } from "@/app/store/courseStore";
 import { useEffect, useState } from "react";
 import { Lesson } from "@/app/types/models";
+import { lessonApi } from "@/app/lib/api";
 
 interface LessonViewProps {
   lessonId: string;
@@ -10,14 +10,36 @@ interface LessonViewProps {
 
 export const LessonView = ({ lessonId }: LessonViewProps) => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const courses = useCourseStore((state) => state.courses);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const foundLesson = courses
-      .flatMap((course) => course.lessons)
-      .find((lesson) => lesson.id === lessonId);
-    setLesson(foundLesson || null);
-  }, [courses, lessonId]);
+    const loadLesson = async () => {
+      try {
+        setLoading(true);
+        const lessonData = await lessonApi.getLessonById(lessonId);
+        setLesson(lessonData);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Błąd podczas ładowania lekcji");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLesson();
+  }, [lessonId]);
+
+  if (loading) {
+    return <div className="text-center py-8">Ładowanie lekcji...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">{error}</div>;
+  }
 
   if (!lesson) {
     return (

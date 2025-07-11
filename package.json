@@ -11,6 +11,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
   },
@@ -23,8 +24,7 @@
     "nanoid": "^5.1.5",
     "next": "15.3.5",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "zustand": "^5.0.6"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.10",

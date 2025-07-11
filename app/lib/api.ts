@@ -109,6 +109,14 @@ export const courseApi = {
   },
 };
 
+// API lekcji
+export const lessonApi = {
+  getLessonById: async (id: string): Promise<Lesson> => {
+    const response = await fetch(`${API_URL}/lessons/${id}`);
+    return handleResponse(response);
+  },
+};
+
 // API kategorii
 export const categoryApi = {
   getAllCategories: async (): Promise<Category[]> => {

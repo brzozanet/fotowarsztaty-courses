@@ -1,5 +1,6 @@
-import { create } from "zustand";
-import { nanoid } from "nanoid";
+// WYŁĄCZONY - Aplikacja używa teraz Prisma + API zamiast Zustand store
+// Zarządzanie użytkownikami przez API endpoints: /api/users/register, /api/users/login
+
 import { User } from "../types/models";
 
 interface UserStore {
@@ -10,42 +11,19 @@ interface UserStore {
   logout: () => void;
 }
 
-export const useUserStore = create<UserStore>((set, get) => ({
+// Pusta implementacja - wszystkie dane teraz przez API
+export const useUserStore = (): UserStore => ({
   currentUser: null,
   users: [],
-
-  register: (email: string, password: string, name: string) => {
-    const userExists = get().users.some((user) => user.email === email);
-    if (userExists) {
-      return false;
-    }
-
-    const newUser: User = {
-      id: nanoid(),
-      email,
-      password, // W prawdziwej aplikacji hasło powinno być zahashowane
-      name,
-    };
-
-    set((state) => ({
-      users: [...state.users, newUser],
-    }));
-    return true;
-  },
-
-  login: (email: string, password: string) => {
-    const user = get().users.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (user) {
-      set({ currentUser: user });
-      return true;
-    }
+  register: () => {
+    console.warn("useUserStore jest wyłączony - używaj API zamiast tego");
     return false;
   },
-
-  logout: () => {
-    set({ currentUser: null });
+  login: () => {
+    console.warn("useUserStore jest wyłączony - używaj API zamiast tego");
+    return false;
   },
-}));
+  logout: () => {
+    console.warn("useUserStore jest wyłączony - używaj API zamiast tego");
+  },
+});
