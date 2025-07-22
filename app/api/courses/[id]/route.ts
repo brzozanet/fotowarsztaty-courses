@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { revalidateCoursesData } from "@/app/lib/cache";
 
 interface Params {
   params: Promise<{
@@ -28,6 +29,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
       },
     });
 
+    // Revalidate cache po aktualizacji kursu
+    await revalidateCoursesData();
+    console.log("✅ Cache revalidated after updating course");
+
     return NextResponse.json(course);
   } catch (error) {
     console.error("Error updating course:", error);
@@ -46,6 +51,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     await prisma.course.delete({
       where: { id },
     });
+
+    // Revalidate cache po usunięciu kursu
+    await revalidateCoursesData();
+    console.log("✅ Cache revalidated after deleting course");
 
     return NextResponse.json({ success: true });
   } catch (error) {

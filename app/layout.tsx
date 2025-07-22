@@ -1,35 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { userApi } from "@/app/lib/api";
-import { User } from "./types/models";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import "./globals.css";
 
+// Uproszczony layout bez zewnętrznych bibliotek state management
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
 
+  // Pobierz użytkownika z localStorage na początku
   useEffect(() => {
     const userStr = localStorage.getItem("currentUser");
     if (userStr) {
-      setCurrentUser(JSON.parse(userStr));
+      try {
+        setCurrentUser(JSON.parse(userStr));
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        localStorage.removeItem("currentUser");
+      }
     }
   }, []);
 
   const handleLogout = async () => {
     try {
-      await userApi.logout();
+      const response = await fetch("/api/users/logout", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        localStorage.removeItem("currentUser");
+        setCurrentUser(null);
+        router.push("/login");
+      }
+    } catch (error) {
+      console.error("Błąd podczas wylogowywania:", error);
+      // Wyloguj lokalnie nawet jeśli API nie działa
       localStorage.removeItem("currentUser");
       setCurrentUser(null);
       router.push("/login");
-    } catch (error) {
-      console.error("Błąd podczas wylogowywania:", error);
     }
   };
 
@@ -48,6 +62,9 @@ export default function RootLayout({
               <div className="flex items-center space-x-4">
                 {currentUser ? (
                   <>
+                    <span className="text-gray-700">
+                      Witaj, {currentUser.name}!
+                    </span>
                     <Link
                       href="/admin"
                       className="text-gray-700 hover:text-gray-900"
@@ -56,7 +73,7 @@ export default function RootLayout({
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="text-gray-700 hover:text-gray-900"
+                      className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                     >
                       Wyloguj
                     </button>
@@ -71,7 +88,7 @@ export default function RootLayout({
                     </Link>
                     <Link
                       href="/register"
-                      className="text-gray-700 hover:text-gray-900"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                     >
                       Zarejestruj
                     </Link>

@@ -11,6 +11,15 @@ const handleResponse = async (response: Response) => {
   return response.json();
 };
 
+// // Public data API
+// export const publicDataApi = {
+//   all: async () => {
+//     try {
+//       const allData = // L27 + prompt claude
+//     } catch (error) {}
+//   },
+// };
+
 // API użytkowników
 export const userApi = {
   register: async (email: string, password: string, name: string) => {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { revalidateCoursesData, revalidateLessonsData } from "@/app/lib/cache";
 
 interface Params {
   params: Promise<{
@@ -50,6 +51,11 @@ export async function POST(request: NextRequest, { params }: Params) {
         course: true,
       },
     });
+
+    // Revalidate cache po dodaniu lekcji
+    await revalidateLessonsData();
+    await revalidateCoursesData(); // bo lekcje wpływają na kursy
+    console.log("✅ Cache revalidated after creating lesson");
 
     return NextResponse.json(lesson, { status: 201 });
   } catch (error) {

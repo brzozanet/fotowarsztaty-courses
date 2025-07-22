@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { revalidateCoursesData } from "@/app/lib/cache";
 
 // GET - Pobierz wszystkie kursy
 export async function GET() {
@@ -45,6 +46,10 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Revalidate cache po dodaniu kursu
+    await revalidateCoursesData();
+    console.log("✅ Cache revalidated after creating course");
 
     return NextResponse.json(course, { status: 201 });
   } catch (error) {
